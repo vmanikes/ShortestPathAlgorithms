@@ -3,7 +3,6 @@
  * @created on: 26 November 2015 
  * @time:12:00 PM
  */
-package shortestpath;
 import java.util.Scanner;
  
 public class FloydWarshall
