@@ -1,4 +1,8 @@
-
+/*
+ * @author Manikeswaram Chaitanya
+ * @created on: 27 November 2015 
+ * @time:12:00 PM
+ */
 import java.util.Scanner;
  
 public class BellmanFordAlgorithm{
