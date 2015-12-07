@@ -1,78 +1,78 @@
-/*
- * @author Manikeswaram Chaitanya
- * @created on: 21 November 2015 
- * @time:9:00 AM
- */
-package shortestpath;
+package john;
 
-import java.util.InputMismatchException;
-import java.util.Scanner;
-public class JohnsonsAlgorithm{
-    private int srcNode, totalNodes;
+import java.util.*;
+public class JohnsonsAlgorithm 
+{
+    private int SOURCE_NODE;
+    private int totalNodes;
     private int augMatrix[][];
     private int temp[];
-    private BellmanFord bellman;
+    private BellmanFord bell;
     private DijkstraShortesPath dijkstra;
     private int[][] allPair;
-    public static final int MAX_VALUE = 999;
+ 
+    public static final int MAX_VALUE = 99999;
+ 
     public JohnsonsAlgorithm(int totalNodes){
         this.totalNodes = totalNodes;
         augMatrix = new int[totalNodes + 2][totalNodes + 2];
-        srcNode = totalNodes + 1;
+        SOURCE_NODE = totalNodes + 1;
         temp = new int[totalNodes + 2];
-        bellman = new BellmanFord(totalNodes + 1);
+        bell = new BellmanFord(totalNodes + 1);
         dijkstra = new DijkstraShortesPath(totalNodes);
-        allPair= new int[totalNodes + 1][totalNodes + 1];
+        allPair = new int[totalNodes + 1][totalNodes + 1];
     }
  
-    public void johnsonsAlgorithm(int adjMatrix[][]){
-        computeGraph(adjMatrix);
-        bellman.bellmanFordPath(srcNode, augMatrix);
-        temp = bellman.getDistance(); 
-        int reweightedGraph[][] = reweightGraph(adjMatrix);
-        for (int i = 1; i <= totalNodes; i=i+1){
-            for (int j = 1; j <= totalNodes; j=j+1){
-                System.out.print(reweightedGraph[i][j] + "\t");
-            }
-            System.out.println();
-        }
-        for (int src = 1; src <= totalNodes; src=src+1){
-            dijkstra.dijkstraShortest(src, reweightedGraph);
-            int[] result = dijkstra.getDistances();
-            for (int dest= 1; dest<= totalNodes; dest=dest+1){
-                allPair[src][dest]=result[dest]+temp[dest]-temp[src];
-            }
-        }
+    public void johnsonsAlgorithms(int adjMatrix[][]){
+        augGraph(adjMatrix);
+        bell.BellmanFordEvaluation(SOURCE_NODE, augMatrix);
+        temp = bell.getDist();
+        int reGraph[][] = reweightGraph(adjMatrix);
+        findPath(reGraph);
+        System.out.println("All pair shortest path is");
         System.out.println();
         for (int i = 1; i<= totalNodes; i=i+1){
             System.out.print("\t"+i);
         }
         System.out.println();
+        //Find the shortest path
         for (int src = 1; src <= totalNodes; src=src+1){
             System.out.print( src +"\t" );
-            for (int dest= 1; dest<= totalNodes; dest=dest+1){
+            for (int dest = 1; dest <= totalNodes; dest=dest+1){
                 System.out.print(allPair[src][dest]+ "\t");
             }
             System.out.println();
         }
     }
- 
-    private void computeGraph(int adjMatrix[][]){
+
+    public void findPath(int[][] reGraph) {
         for (int src = 1; src <= totalNodes; src=src+1){
-            for (int dest= 1; dest<= totalNodes; dest=dest+1){ 
+            dijkstra.dijkstraShortestPath(src, reGraph);
+            int[] result = dijkstra.getDist();
+            for (int dest = 1; dest <= totalNodes; dest=dest+1){
+                allPair[src][dest] = result[dest]
+                        + temp[dest] - temp[src];
+            }
+        }
+    }
+ 
+    private void augGraph(int adjMatrix[][]){
+        for (int src = 1; src <= totalNodes; src=src+1){
+            for (int dest = 1; dest <= totalNodes; dest=dest+1){ 
                 augMatrix[src][dest] = adjMatrix[src][dest];
             }
         }
         for (int dest = 1; dest <= totalNodes; dest=dest+1){
-            augMatrix[srcNode][dest] = 0;
+            augMatrix[SOURCE_NODE][dest] = 0;
         }
     }
- 
+	// Nodes with value 0 will be turning out to infinity
     private int[][] reweightGraph(int adjMatrix[][]){
         int[][] result = new int[totalNodes + 1][totalNodes + 1];
         for (int src = 1; src <= totalNodes; src=src+1){
             for (int dest = 1; dest <= totalNodes; dest=dest+1){
-                result[src][dest]=adjMatrix[src][dest]+temp[src]-temp[dest];
+                result[src][dest] = adjMatrix[src][dest]
+                       + temp[src] - temp[dest];
             }
         }
         return result;
@@ -80,17 +80,16 @@ public class JohnsonsAlgorithm{
  
     public static void main(String args[]){
         int adjMatrix[][];
-        int vertices;
+        int totalVertices;
         Scanner scan = new Scanner(System.in);
-        try{
-            System.out.println("Input the number of vertices:");
+            System.out.println("Enter the number of vertices:");
             System.out.println("=============================");
-            vertices = scan.nextInt();
-            adjMatrix = new int[vertices + 1][vertices + 1];
-            System.out.println("Input the matrix for the graph:");
+            totalVertices = scan.nextInt();
+            adjMatrix = new int[totalVertices + 1][totalVertices + 1];
+            System.out.println("Enter the Matrix for the graph:");
             System.out.println("===============================");
-            for (int i = 1; i <= vertices; i=i+1){
-                for (int j = 1; j <= vertices; j=j+1){
+            for (int i = 1; i <= totalVertices; i=i+1){
+                for (int j = 1; j <= totalVertices; j=j+1){
                     adjMatrix[i][j] = scan.nextInt();
                     if (i == j){
                         adjMatrix[i][j] = 0;
@@ -101,53 +100,61 @@ public class JohnsonsAlgorithm{
                     }
                 }
             }
- 
-            JohnsonsAlgorithm JA = new JohnsonsAlgorithm(vertices);
-            JA.johnsonsAlgorithm(adjMatrix);
-        } catch (InputMismatchException wrongInput)
-        {
-            System.out.println("User has entered an incorrect input format");
-        }
+            System.out.println("=============================");
+            JohnsonsAlgorithm johnsonsAlgo = new JohnsonsAlgorithm(totalVertices);
+            long previous = System.nanoTime();
+            johnsonsAlgo.johnsonsAlgorithms(adjMatrix);
+            long currentTime = System.nanoTime();
+            System.out.println("=================");
+            System.out.println("Execution time is");
+            System.out.println("=================");
+            long elapsed=(currentTime-previous)/1000;
+            System.out.println(elapsed);
         scan.close();
     }
 }
  
-class BellmanFord{
+class BellmanFord 
+{
     private int dist[];
-    private int totalVertices;
-    public static final int MAX_VALUE = 9999;
-    public BellmanFord(int totalVertices){
-        this.totalVertices = totalVertices;
-        dist = new int[totalVertices + 1];
+    private int vertices;
+    public static final int MAX_VALUE = 999;
+    public BellmanFord(int vertices)  
+    {
+        this.vertices = vertices;
+        dist = new int[vertices + 1];
     }
  
-    public void bellmanFordPath(int src, int adjMatrix[][]){
-        for (int node = 1; node <= totalVertices; node=node+1){
+    public void BellmanFordEvaluation(int src, int adjMatrix[][]){
+        for (int node = 1; node <= vertices; node=node+1){
             dist[node] = MAX_VALUE;
         }
         dist[src] = 0;
-        for (int node = 1; node <= totalVertices - 1; node=node+1){
-            for (int srcNode = 1; srcNode <= totalVertices; srcNode=srcNode+1){
-                for (int destNode = 1; destNode <= totalVertices; destNode=destNode+1){
-                    if (adjMatrix[srcNode][destNode] != MAX_VALUE){
-                        if (dist[destNode] > dist[srcNode]+ adjMatrix[srcNode][destNode]){
-                            dist[destNode] = dist[srcNode]+adjMatrix[srcNode][destNode];
+        for (int node = 1; node <= vertices - 1; node=node+1){
+            for (int srcnode = 1; srcnode <= vertices; srcnode=srcnode+1){
+                for (int destnode = 1; destnode <= vertices; destnode=destnode+1){
+                    if (adjMatrix[srcnode][destnode] != MAX_VALUE){
+                        if (dist[destnode] > dist[srcnode]+ adjMatrix[srcnode][destnode]){
+                            dist[destnode] = dist[srcnode]+ adjMatrix[srcnode][destnode];
                         }
                     }
                 }
             }
         }
-        for (int srcNode = 1; srcNode <= totalVertices; srcNode=srcNode+1){
-            for (int destNode = 1; destNode <= totalVertices; destNode=destNode+1){
-                if (adjMatrix[srcNode][destNode] != MAX_VALUE){
-                    if (dist[destNode] > dist[srcNode]+ adjMatrix[srcNode][destNode])
-                        System.out.println("Graph has negative egde cycle");
-	        }
+        negativeEdge(adjMatrix);
+    }
+	//calculating the negative edges
+    public void negativeEdge(int[][] adjMatrix) {
+        for (int srcnode = 1; srcnode <= vertices; srcnode=srcnode+1){
+            for (int destnode = 1; destnode <= vertices; destnode=destnode+1){
+                if (adjMatrix[srcnode][destnode] != MAX_VALUE){
+                    if (dist[destnode] > dist[srcnode]+ adjMatrix[srcnode][destnode])
+                        System.out.println("The Graph contains negative egde cycle");
+                }
             }
         }
     }
- 
-    public int[] getDistance(){
+     public int[] getDist(){
         return dist;
     }
 }
@@ -157,41 +164,42 @@ class DijkstraShortesPath{
     private boolean unset[];
     private int dist[];
     private int adjMatrix[][];
-    private int totalVertices;
+    private int vertices;
+ 
     public static final int MAX_VALUE = 999;
  
-    public DijkstraShortesPath(int totalVertices){
-        this.totalVertices = totalVertices;
+    public DijkstraShortesPath(int vertices){
+        this.vertices = vertices;
     }
  
-    public void dijkstraShortest(int src, int adjMatrix[][]){
-        this.set = new boolean[totalVertices + 1];
-        this.unset = new boolean[totalVertices + 1];
-        this.dist = new int[totalVertices + 1];
-        this.adjMatrix = new int[totalVertices + 1][totalVertices + 1];
+    public void dijkstraShortestPath(int src, int adjMatrix[][]){
+        this.set = new boolean[vertices + 1];
+        this.unset = new boolean[vertices + 1];
+        this.dist = new int[vertices + 1];
+        this.adjMatrix = new int[vertices + 1][vertices + 1];
         int evalNode;
-        for (int vertex = 1; vertex <= totalVertices; vertex=vertex+1){
+        for (int vertex = 1; vertex <= vertices; vertex=vertex+1){
             dist[vertex] = MAX_VALUE;
         }
- 
-        for (int srcVertex = 1; srcVertex <= totalVertices; srcVertex=srcVertex+1){
-            for (int destVertex = 1; destVertex <= totalVertices; destVertex=srcVertex+1){
-                this.adjMatrix[srcVertex][destVertex]= adjMatrix[srcVertex][destVertex];
+        for (int srcvertex = 1; srcvertex <= vertices; srcvertex=srcvertex+1){
+            for (int destvertex = 1; destvertex <= vertices; destvertex=destvertex+1){
+                this.adjMatrix[srcvertex][destvertex] 
+                     = adjMatrix[srcvertex][destvertex];
             }
         }
         unset[src] = true;
         dist[src] = 0;
-        while (getUnsetCount(unset)!= 0){
-            evalNode = minimumDistance(unset);
+        while (getUnsetCount(unset) != 0){
+            evalNode = minDistance(unset);
             unset[evalNode] = false;
             set[evalNode] = true;
-            checkNeighbours(evalNode);
+            evalNeighbours(evalNode);
         }
     } 
  
     public int getUnsetCount(boolean unset[]){
         int count = 0;
-        for (int vertex = 1; vertex <= totalVertices; vertex=vertex+1){
+        for (int vertex = 1; vertex <= vertices; vertex=vertex+1){
             if (unset[vertex] == true){
                 count++;
             }
@@ -199,10 +207,10 @@ class DijkstraShortesPath{
         return count;
     }
  
-    public int minimumDistance(boolean unset[]){
+    public int minDistance(boolean unset[]){
         int min = MAX_VALUE;
         int node = 0;
-        for (int vertex = 1; vertex <= totalVertices; vertex=vertex+1){
+        for (int vertex = 1; vertex <= vertices; vertex=vertex+1){
             if (unset[vertex] == true && dist[vertex] < min){
                 node = vertex;
                 min = dist[vertex];
@@ -211,24 +219,24 @@ class DijkstraShortesPath{
         return node;
     }
  
-    public void checkNeighbours(int evalNode){
-        int edgeDist = -1;
-        int newDist = -1; 
-        for (int destNode = 1; destNode <= totalVertices; destNode=destNode+1){
+    public void evalNeighbours(int evaluationNode){
+        int edgeDistance = -1;
+        int newDistance = -1;
+ 
+        for (int destNode = 1; destNode <= vertices; destNode++){
             if (set[destNode] == false){
-                if (adjMatrix[evalNode][destNode] != MAX_VALUE){
-                    edgeDist = adjMatrix[evalNode][destNode];
-                    newDist = dist[evalNode] + edgeDist;
-                    if (newDist < dist[destNode]){
-                        dist[destNode] = newDist;
+                if (adjMatrix[evaluationNode][destNode] != MAX_VALUE){
+                    edgeDistance = adjMatrix[evaluationNode][destNode];
+                    newDistance = dist[evaluationNode] + edgeDistance;
+                    if (newDistance < dist[destNode]){
+                        dist[destNode] = newDistance;
                     }
                     unset[destNode] = true;
                 }
             }
         }
     }
- 
-    public int[] getDistances(){
+    public int[] getDist(){
         return dist;
     }
 }
